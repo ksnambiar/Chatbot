@@ -72,13 +72,76 @@ word2count={}
 for question in clean_questions:
     for word in question.split():
         if word not in word2count:
-            wordcount[word]=1
+            word2count[word]=1
         else:
             word2count[word]+=1
 
 for answer in clean_answers:
     for word in answer.split():
         if word not in word2count:
-            wordcount[word]=1
+            word2count[word]=1
         else:
             word2count[word]+=1
+#filtering words
+#ceck later
+threshhold=20
+questionswords2int={}
+word_number=0
+for word,count in word2count.items():
+    if count>threshhold:
+        questionswords2int[word]=count
+        count+=1
+
+answerswords2int = {}
+word_number=0
+for word, count in word2count.items():
+    if count>=threshhold:
+         answerswords2int[word]=count
+         count+=1
+            
+##putting special keys
+tokens=['<PAD>','<EOS>','<OUT>','<SOS>']
+for token in tokens:
+    questionswords2int[token]=len(questionswords2int)+1
+
+for token in tokens:
+    answerswords2int[token]=len(answerswords2int)+1
+    
+#creating inverse dictionary of the answerswords2int dictionary
+answersints2word = {w_i:w for w,w_i in answerswords2int.items()}
+
+#appending eos to every line
+for i in range(len(clean_answers)):
+    clean_answers[i] += ' <EOS>'
+
+##replacing all words with integers
+questions_into_int=[]
+for question in clean_questions:
+    ints=[]
+    for word in question.split():
+        if word not in questionswords2int:
+            ints.append(questionswords2int['<OUT>'])
+        else:
+            ints.append(questionswords2int[word])
+    questions_into_int.append(ints)
+
+answers_to_int = []
+for answer in clean_answers:
+    ints = []
+    for word in question.split():
+        if word not in questionswords2int:
+            ints.append(answerswords2int['<OUT>'])
+        else:
+            ints.append(answerswords2int[word])
+    answers_to_int.append(ints)
+
+#sorting questions and answers by the length of questions
+sorted_clean_questions=[]
+sorted_clean_answers=[]
+for length in range(1,25+1):
+    for i in enumerate(questions_into_int):
+        if len(i[1])==length:
+            sorted_clean_questions.append(questions_into_int[i[0]])
+            sorted_clean_answers.append(answers_to_int[i[0]])
+
+            
